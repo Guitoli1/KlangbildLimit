@@ -3,6 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "PluginProcessor.h"
 #include "VintageUI.h"
+#include "RackStyle.h"
 
 class LimitAudioProcessorEditor : public juce::AudioProcessorEditor, private juce::Timer
 {
@@ -22,11 +23,10 @@ private:
     Knob& addKnob (const juce::String& paramID, const juce::String& name, bool big, const juce::String& steps = {});
     void setupSwitch (juce::ToggleButton& b, const juce::String& paramID, const juce::String& onText, const juce::String& offText, juce::Colour lamp);
     void timerCallback() override;
-    void renderTextures();
-    void drawEngraved (juce::Graphics&, const juce::String&, juce::Rectangle<float>, juce::Font, juce::Justification);
+    void renderPanel();
 
     LimitAudioProcessor& proc;
-    VintageLookAndFeel lnf;
+    RackLookAndFeel lnf;
 
     std::vector<std::unique_ptr<Knob>> knobs;
     juce::ToggleButton onSwitch, autoSwitch, matchSwitch;
@@ -46,9 +46,11 @@ private:
     } readout { lnf };
     float tpHold = -100.0f; int tpHoldFrames = 0, frame = 0;
 
-    juce::Rectangle<int> faceplate, presetArea, vuBezelL, vuBezelR, dividerArea, tagArea;
+    static constexpr int rackW = 1280, rackH = 620;
+    juce::Rectangle<int> nameplate, vuBezelL, vuBezelR, tagArea;
+    std::array<juce::Rectangle<int>, 4> sections;
     std::array<juce::Rectangle<int>, 3> switchLabels;
-    juce::Image tolexImage, faceplateImage;
+    juce::Image panelImage;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LimitAudioProcessorEditor)
 };
