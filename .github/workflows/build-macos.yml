@@ -1,0 +1,51 @@
+name: macOS Build (AU + VST3)
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Konfigurieren (Universal: Apple Silicon + Intel)"
+        run: >
+          cmake -B build -G Xcode
+          -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+
+      - name: Kompilieren
+        run: cmake --build build --config Release --parallel 4
+
+      - name: Ad-hoc signieren
+        run: |
+          cd build/KlangbildLimit_artefacts/Release
+          codesign --force --deep --sign - "AU/Klangbild Limit.component"
+          codesign --force --deep --sign - "VST3/Klangbild Limit.vst3"
+          codesign --force --deep --sign - "Standalone/Klangbild Limit.app"
+
+      - name: Paket schnüren
+        run: |
+          mkdir -p dist
+          cd build/KlangbildLimit_artefacts/Release
+          ditto -c -k --sequesterRsrc --keepParent "AU/Klangbild Limit.component"  "$GITHUB_WORKSPACE/dist/Klangbild-Limit-AU.zip"
+          ditto -c -k --sequesterRsrc --keepParent "VST3/Klangbild Limit.vst3"      "$GITHUB_WORKSPACE/dist/Klangbild-Limit-VST3.zip"
+          ditto -c -k --sequesterRsrc --keepParent "Standalone/Klangbild Limit.app" "$GITHUB_WORKSPACE/dist/Klangbild-Limit-Standalone.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Klangbild-Limit-macOS
+          path: dist/
+
+      # Apples offizieller AU-Test (derselbe, den Logic Pro beim Scannen macht)
+      - name: AU-Validierung (auval)
+        run: |
+          mkdir -p ~/Library/Audio/Plug-Ins/Components
+          cp -R "build/KlangbildLimit_artefacts/Release/AU/Klangbild Limit.component" ~/Library/Audio/Plug-Ins/Components/
+          killall -9 AudioComponentRegistrar || true
+          sleep 3
+          auval -v aufx Kbli Klbd
