@@ -76,6 +76,7 @@ void LimitAudioProcessorEditor::timerCallback()
     constexpr float dt = 1.0f / 60.0f;
     // links: Pegelreduktion – Zeiger steht ohne Limiting auf 0 VU und wandert nach links
     const float gr = proc.grDb.load();
+    vuLeft.setRestAtZeroVu (true);
     vuLeft.update (juce::Decibels::decibelsToGain (-gr - 18.0f) / 1.1107f, 0.0f, dt);
     vuRight.update (proc.vuOut.load(), proc.peakOut.exchange (0.0f), dt);
 
