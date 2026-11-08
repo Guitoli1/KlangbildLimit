@@ -7,7 +7,7 @@
 
 namespace rack
 {
-const juce::Colour lacquer { 0xff5f7487 };
+const juce::Colour lacquer { 0xff3f4247 };   // Graphit (Mastering)
 const juce::Colour silk    { 0xfff2eee4 };
 const juce::Colour silkDim { 0xc8f2eee4 };
 inline juce::String u8 (const char* t) { return juce::String (juce::CharPointer_UTF8 (t)); }
